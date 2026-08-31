@@ -1,0 +1,118 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 1.5rem clamp(1rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--sch-line);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: .04em;
+}
+
+.app-title .sch-muted { font-weight: 400; }
+
+.app-main {
+  padding: clamp(1rem, 4vw, 2.5rem);
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.channel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.channel-plan {
+  margin: .15rem 0 0;
+}
+
+.window-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.window-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: .4rem;
+}
+
+.window-meter-pct {
+  font-size: 1.4rem;
+  color: var(--sch-accent);
+}
+
+.window-meter-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: .4rem;
+}
+
+.window-meter-reset {
+  font-family: var(--sch-font-mono);
+  font-size: .8rem;
+}
+
+.channel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sch-line);
+}
+
+.status-ok .sch-status-dot { background: var(--sch-accent); }
+.status-warn .sch-status-dot { background: #c99a1f; }
+.status-error .sch-status-dot { background: #b5303b; }
+.status-idle .sch-status-dot { background: var(--sch-muted); }
+
+.connect-form {
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  max-width: 26rem;
+}
+
+.connect-note {
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.code-block {
+  margin: 0;
+  padding: .65rem .75rem;
+  background: var(--sch-surface-2);
+  border: 1px solid var(--sch-line);
+  border-radius: var(--sch-radius);
+  font-family: var(--sch-font-mono);
+  font-size: .8rem;
+  overflow-x: auto;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: .35rem;
+}
+
+.theme-toggle {
+  min-height: 2.25rem;
+  padding: .4rem .75rem;
+}
+
+.error-note {
+  color: #b5303b;
+  font-size: .8rem;
+  line-height: 1.5;
+}

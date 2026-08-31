@@ -1,0 +1,12 @@
+node_modules/
+.agents/
+.claude/
+data/*.db*
+data/*.key
+data/*.json
+data/home/
+!data/.gitkeep
+web/dist/
+.env
+*.log
+.DS_Store

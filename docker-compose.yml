@@ -1,0 +1,16 @@
+services:
+  ai-dashboard:
+    build: .
+    container_name: ai-dashboard
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./data:/data
+    environment:
+      - PORT=4200
+      - DATA_DIR=/data
+      - POLL_CRON=*/5 * * * *
+      # Keeps this container's Claude Code / Codex login fully separate from
+      # any account you're signed into elsewhere.
+      - HOME=/data/home
