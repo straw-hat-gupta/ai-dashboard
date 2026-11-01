@@ -90,7 +90,87 @@ scanner (option 1) and the push script (option 2).
 
 ---
 
-## Phase 2 — History & trends
+## Phase 2 — Reset credits ("use a reset" buttons)
+
+**Goal:** each subscription card shows how many saved limit resets are
+available (and when they expire), with its **own** button to redeem one —
+"Use Claude reset" and "Use Codex reset" are separate actions on separate
+cards.
+
+Both providers now hand out occasional resets that refresh your limits on
+demand. Neither offers an official API for them, so this phase starts with
+verification.
+
+### Codex — looks feasible
+
+- OpenAI's savable rate-limit resets (launched June 2026; Go / Plus / Pro /
+  Business) refresh the 5-hour and weekly windows. In official clients the
+  redeem button lives in the desktop app / VS Code extension usage summary.
+- Community reverse-engineering of the VS Code extension found:
+  - `GET /wham/rate-limit-reset-credits` → per-credit `status`,
+    `granted_at`, `expires_at`; an `available_count`
+  - `POST /wham/rate-limit-reset-credits/consume` with
+    `{ credit_id, redeem_request_id }` → `{ code: "reset", windows_reset }`
+- Auth would reuse the token `codex login` already stored
+  (`~/.codex/auth.json`). Base host is presumably
+  `https://chatgpt.com/backend-api` — **to verify**.
+- Also check whether `codex app-server` exposes these over JSON-RPC
+  (preferred — same mechanism we already use, less likely to break).
+
+### Claude — needs discovery
+
+- Claude offers occasional "Reset for free" grants under Settings → Usage
+  (web / Desktop). Each reset targets either the 5-hour or the weekly limit,
+  has an expiry, can't be undone, and also restores Claude Code limits.
+- It is **not** available in Claude Code (terminal / IDE), and no endpoint
+  is documented.
+- Discovery steps:
+  1. Log the raw `api/oauth/usage` body — it may already list available
+     resets (we only parse the windows today).
+  2. Watch network calls on claude.ai Settings → Usage when a reset is
+     available, to find the list/redeem endpoints.
+  3. Check whether those endpoints accept the Claude Code OAuth token or
+     require a claude.ai browser session (we don't store cookies, by design).
+- **Fallback:** if redeeming needs a browser session, show the count only
+  (if readable) and make the button deep-link to
+  `claude.ai/settings/usage` instead of redeeming directly.
+
+### Work items
+
+- [ ] Provider adapters gain `listResets()` and `redeemReset(id)`;
+      `fetch*Quota()` results include
+      `resets: [{ id, kind: "session" | "weekly" | "both", expiresAt }]`.
+- [ ] Store reset snapshots so the card can show "1 reset · expires 12 Nov".
+- [ ] `POST /api/usage/:provider/resets/:id/redeem` — one route, called by
+      a separate button per provider card.
+- [ ] UI: button only appears when a reset is available; shows which
+      limit(s) it will refresh and current usage, so you don't waste one at
+      20%.
+- [ ] After redeeming, immediately re-poll that provider so the meters
+      update.
+
+### Guardrails (non-negotiable)
+
+- **Never auto-redeem.** Only a human click, followed by a confirm dialog
+  ("This uses 1 of 1 Codex resets, can't be undone").
+- **Idempotent:** generate `redeem_request_id` once per click and disable
+  the button in flight, so a double-click or retry can't burn two resets.
+- **Gate behind dashboard auth** (Phase 6) — right now anyone who can reach
+  the dashboard could press it. Until auth exists, ship redemption behind
+  `ENABLE_RESET_REDEEM=false` by default.
+- Undocumented endpoints may change or conflict with provider terms; keep
+  each in its isolated adapter and fail closed (hide the button) on any
+  unexpected response shape.
+
+### Open questions
+
+- Does `api/oauth/usage` (or `codex app-server`) already report resets?
+- Does Claude's redeem accept an OAuth bearer token at all?
+- Show resets in the alerting phase too ("reset expiring in 2 days")?
+
+---
+
+## Phase 3 — History & trends
 
 - [ ] Chart of `used_percent` over time per window (data already stored in
       `usage_windows`; `GET /:provider/history/:windowId` exists).
@@ -98,15 +178,16 @@ scanner (option 1) and the push script (option 2).
       at 15:40", "weekly cap reached ~Thursday".
 - [ ] History retention / pruning setting (`HISTORY_DAYS`).
 
-## Phase 3 — Alerts
+## Phase 4 — Alerts
 
 - [ ] Threshold notifications (e.g. 80% / 95%) and "window has reset"
       pings.
 - [ ] Targets: ntfy / Gotify / Discord webhook / generic webhook — all
       self-host friendly.
 - [ ] Per-window thresholds, quiet hours, no repeat alerts within a window.
+- [ ] "Reset available" / "reset expiring soon" notifications (Phase 2).
 
-## Phase 4 — Accounts & providers
+## Phase 5 — Accounts & providers
 
 - [ ] Multiple accounts per provider (e.g. personal + work Claude), each
       with its own `HOME` dir and card.
@@ -115,10 +196,11 @@ scanner (option 1) and the push script (option 2).
 - [ ] Investigate others with a CLI-exposed quota (e.g. Gemini CLI,
       GitHub Copilot) — only where a stable local mechanism exists.
 
-## Phase 5 — Hardening & ops
+## Phase 6 — Hardening & ops
 
 - [ ] Optional built-in auth (basic auth / single shared password) for
-      people not behind a reverse proxy.
+      people not behind a reverse proxy. **Required before reset
+      redemption (Phase 2) is enabled by default.**
 - [ ] `/healthz` endpoint + Docker `HEALTHCHECK`.
 - [ ] Surface "endpoint shape changed" errors distinctly from auth errors.
 - [ ] Pin CLI versions in the Dockerfile with a documented update flow.

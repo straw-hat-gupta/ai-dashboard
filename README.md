@@ -3,7 +3,7 @@
 A self-hosted, single-page dashboard that tracks your Claude Code and Codex
 CLI subscription usage: 5-hour and weekly quota, and when each resets.
 
-Planned features (per-subscription token usage, trends, alerts) are in
+Planned features (per-subscription token usage, reset-credit buttons, trends, alerts) are in
 [ROADMAP.md](ROADMAP.md).
 
 ## Scope: Claude Code / Codex, not chatgpt.com / claude.ai chat
